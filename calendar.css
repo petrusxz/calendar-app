@@ -1,0 +1,41 @@
+h2 {
+  color: #222;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td[id^="date"] {
+  position: relative;
+  height: 80px;
+  width: 80px;
+  border: 1px solid #dedede;
+  vertical-align: top;
+  padding: 6px;
+}
+
+td.other-month {
+  color: #dedede;
+}
+
+.new-appointment {
+  background-color: lightgrey;
+  position: absolute;
+  top: 28px;
+  height: 60px;
+  z-index: 9;
+}
+
+button#appointment-box {
+  display: block;
+}
+
+#appointment {
+  position: absolute;
+  height: 64%;
+  width: 87%;
+  top: 0;
+  left: 0;
+  padding: 28px 6px 6px;
+}
