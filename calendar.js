@@ -3,6 +3,8 @@ class Calendar {
   constructor() {
     this.calendar = document.getElementById('calendar');
     this.activeMonth = document.getElementById('active-month');
+    this.appointmentBox = document.getElementById('appointment-box');
+    this.appointmentBox.addEventListener('submit', this.saveAppointment.bind(this));
 
     this.initializeDate();
     this.setEvents();
@@ -18,7 +20,7 @@ class Calendar {
   }
 
   /**
-   * @description Controls next, previous and current month iteration for the Calendar
+   * @description Assign events to the next, previous and current month iteration controls in the Calendar
    */
   setEvents() {
     const previousCtrl = document.getElementById('previous-ctrl');
@@ -29,87 +31,111 @@ class Calendar {
     previousCtrl.addEventListener('click', this.setCurrentMonthDates.bind(this, -1));
     nextCtrl.addEventListener('click', this.setCurrentMonthDates.bind(this, 1));
     todayCtrl.addEventListener('click', this.initializeDate.bind(this));
-    calendarEvents.addEventListener('click', this.manageEvent.bind(this));
+    calendarEvents.addEventListener('click', this.openEventManagementBox.bind(this));
   }
 
   /**
    * @param {number} iterator 
-   * @description Generates dates slots for the current month on the Calendar
+   * @description Generates dates for the current month on the Calendar
    */
   setCurrentMonthDates(iterator = 0) {
+    this.calendar.innerHTML = '';
+
     this.activeDate.setMonth(this.activeDate.getMonth() + iterator);
-    const dt = new Date(this.activeDate.getFullYear(), this.activeDate.getMonth(), 1);
-    dt.setDate(dt.getDate() - dt.getDay());
+    this.generateDateCells();
+    this.changeMonthLabel();
+  }
+
+  /**
+   * Creates date cells divided by row (week)
+   */
+  generateDateCells() {
+    const dateHelper = new Date(this.activeDate.getFullYear(), this.activeDate.getMonth(), 1);
+    dateHelper.setDate(dateHelper.getDate() - dateHelper.getDay());
 
     let weekRow = document.createElement('tr');
-    this.calendar.innerHTML = '';
     this.calendar.appendChild(weekRow);
 
     for (let i = 0; i < 42; i++) {
-      const dateSlot = weekRow.insertCell();
-      dateSlot.id = `date-${dt.getTime()}`;
-      dateSlot.innerText = dt.getDate();
+      const dateCell = weekRow.insertCell();
+      dateCell.id = `date-${dateHelper.getTime()}`;
+      dateCell.innerText = dateHelper.getDate();
+      
+      const value = localStorage.getItem(dateCell.id);
 
-      if (dt.getMonth() !== this.activeDate.getMonth()) {
-        dateSlot.className = 'other-month';
+      if (value) {
+        const appointment = this.generateAppointmentDiv(value);
+        dateCell.appendChild(appointment);
       }
 
-      if (dt.getDay() === 6) {
+      if (dateHelper.getMonth() !== this.activeDate.getMonth()) {
+        dateCell.className = 'other-month';
+      }
+
+      if (dateHelper.getDay() === 6 && i < 41) {
         weekRow = document.createElement('tr');
         this.calendar.appendChild(weekRow);
       }
 
-      dt.setDate(dt.getDate() + 1);
+      dateHelper.setDate(dateHelper.getDate() + 1);
     }
+  }
 
+  /**
+   * Changes the month label at the top of the Calendar
+   */
+  changeMonthLabel() {
     this.activeMonth.innerText = `${this.activeDate.toLocaleDateString('en', { month: 'short' })} ${this.activeDate.getFullYear()}`;
   }
 
-  manageEvent(event) {
-    const { id } = event.target;
-
+  /**
+   * Creates an edit box for the appointment's description for the selected date
+   * @param {MouseEvent} event 
+   */
+  openEventManagementBox(event) {
+    const {
+      id
+    } = event.target;
     if (id === 'appointment-box') return;
 
-    const appointmentBox = document.getElementById('appointment-box');
-    if (appointmentBox) appointmentBox.remove();
-    const appointment = document.createElement('form');
-    appointment.className = 'new-appointment';
-    appointment.id = 'appointment-box';
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'appointment-box';
-    input.autofocus = true;
-
-    if (id === 'appointment') {
-      input.value = event.target.innerText;
-    }
-
-    const confirmButton = document.createElement('button');
-    confirmButton.innerText = 'OK';
-    confirmButton.type = 'submit';
-    confirmButton.id = 'appointment-box';
-
-    appointment.appendChild(input);
-    appointment.appendChild(confirmButton);
-    appointment.addEventListener('submit', this.saveAppointment.bind(this));
-
-    event.target.appendChild(appointment);
+    this.appointmentBox.hidden = false;
+    this.appointmentBox[0].value = (id === 'appointment') ? event.target.innerText : '';
+    setTimeout(() => this.appointmentBox[0].focus(), 0);
+    event.target.appendChild(this.appointmentBox);
   }
 
+  /**
+   * Saves appointments for the selected date
+   * @param {MouseEvent} event 
+   */
   saveAppointment(event) {
     event.preventDefault();
-    const { value } = event.target[0];
 
+    const { value } = event.target[0];
     if (!value) return;
-    event.target.innerHTML = '';
+
     const parent = event.target.parentElement;
+    const appointment = this.generateAppointmentDiv(value);
+
+    const { id } = event.target.parentNode;
+    localStorage.setItem(id, value);
+
+    event.target[0].value = '';
+    this.appointmentBox.hidden = true;
+
+    parent.appendChild(appointment);
+  }
+
+  /**
+   * Generates appointment element with the given value
+   * @param {string} value 
+   */
+  generateAppointmentDiv(value) {
     const appointment = document.createElement('div');
     appointment.id = 'appointment';
     appointment.innerText = value;
 
-    parent.appendChild(appointment);
-    event.target.remove();
+    return appointment;
   }
 }
 

@@ -19,7 +19,7 @@ td.other-month {
   color: #dedede;
 }
 
-.new-appointment {
+form#appointment-box {
   background-color: lightgrey;
   position: absolute;
   top: 28px;
