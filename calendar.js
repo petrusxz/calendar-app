@@ -14,8 +14,10 @@ class Calendar {
    * @description Initializes the active date to the current date
    */
   initializeDate() {
-    const today = new Date();
-    this.activeDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.today = new Date();
+    this.today.setHours(0, 0, 0, 0);
+
+    this.activeDate = new Date(this.today.getFullYear(), this.today.getMonth(), 1);
     this.setCurrentMonthDates();
   }
 
@@ -59,12 +61,17 @@ class Calendar {
     for (let i = 0; i < 42; i++) {
       const dateCell = weekRow.insertCell();
       dateCell.id = `date-${dateHelper.getTime()}`;
-      dateCell.innerText = dateHelper.getDate();
+      const dateNumber = document.createElement('span');
+      dateNumber.innerText = dateHelper.getDate();
       
       const value = localStorage.getItem(dateCell.id);
+      
+      if (dateHelper.getTime() === this.today.getTime()) {
+        dateNumber.className = 'today';
+      }
 
       if (value) {
-        const appointment = this.generateAppointmentDiv(value);
+        const appointment = this.generateAppointmentDiv(value, dateCell.id);
         dateCell.appendChild(appointment);
       }
 
@@ -77,6 +84,7 @@ class Calendar {
         this.calendar.appendChild(weekRow);
       }
 
+      dateCell.appendChild(dateNumber);
       dateHelper.setDate(dateHelper.getDate() + 1);
     }
   }
@@ -85,7 +93,12 @@ class Calendar {
    * Changes the month label at the top of the Calendar
    */
   changeMonthLabel() {
-    this.activeMonth.innerText = `${this.activeDate.toLocaleDateString('en', { month: 'short' })} ${this.activeDate.getFullYear()}`;
+    const month = document.createElement('b');
+    month.innerText = this.activeDate.toLocaleDateString('en', { month: 'short' });
+    
+    this.activeMonth.innerHTML = '';
+    this.activeMonth.appendChild(month);
+    this.activeMonth.append(` ${this.activeDate.getFullYear()}`);
   }
 
   /**
@@ -93,15 +106,16 @@ class Calendar {
    * @param {MouseEvent} event 
    */
   openEventManagementBox(event) {
-    const {
-      id
-    } = event.target;
-    if (id === 'appointment-box') return;
+    const { id } = event.target;
+    const { id: idParent } = event.target.parentElement;
+    const target = idParent !== 'appointment' ? event.target : event.target.parentElement;
 
+    if ((id === 'appointment-box' || id === 'delete-appointment') || (target.tagName === 'SPAN' && !this.appointmentBox.hidden)) return;
+    
+    this.appointmentBox[0].value = (id === 'appointment' || idParent === 'appointment') ? event.target.innerText.split('\n')[0] : '';
     this.appointmentBox.hidden = false;
-    this.appointmentBox[0].value = (id === 'appointment') ? event.target.innerText : '';
-    setTimeout(() => this.appointmentBox[0].focus(), 0);
-    event.target.appendChild(this.appointmentBox);
+    target.appendChild(this.appointmentBox);
+    this.appointmentBox[0].focus();
   }
 
   /**
@@ -115,7 +129,7 @@ class Calendar {
     if (!value) return;
 
     const parent = event.target.parentElement;
-    const appointment = this.generateAppointmentDiv(value);
+    const appointment = this.generateAppointmentDiv(value, parent.id);
 
     const { id } = event.target.parentNode;
     localStorage.setItem(id, value);
@@ -129,13 +143,28 @@ class Calendar {
   /**
    * Generates appointment element with the given value
    * @param {string} value 
+   * @param {string} id
    */
-  generateAppointmentDiv(value) {
+  generateAppointmentDiv(value, id) {
     const appointment = document.createElement('div');
     appointment.id = 'appointment';
-    appointment.innerText = value;
+    const textSpan = document.createElement('span');
+    textSpan.innerText = value;
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete';
+    deleteBtn.innerHTML = 'Χ';
+
+    deleteBtn.addEventListener('click', this.deleteAppointment.bind(this, id));
+    
+    textSpan.appendChild(deleteBtn);
+    appointment.appendChild(textSpan);
 
     return appointment;
+  }
+
+  deleteAppointment(id, event) {
+    localStorage.removeItem(id);
+    event.target.parentNode.remove();
   }
 }
 

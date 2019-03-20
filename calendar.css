@@ -1,15 +1,59 @@
-h2 {
-  color: #222;
+.calendar-container {
+  max-width: 800px;
+  min-width: 400px;
+  margin: auto;
+}
+
+.calendar-header {
+  width: 100%;
+  height: 40px;
+  margin: 16px 0 8px 0;
+}
+
+#active-month {
+  font-size: 1.4em;
+  float: left;
+}
+
+.today {
+  color: white;
+  position: absolute;
+  padding: 4px;
+  border-radius: 50%;
+  background-color: #222;
+}
+
+button {
+  cursor: pointer;
+  border: unset;
+}
+
+button[id$="ctrl"] {
+  height: 26px;
+  background-color: #fff;
+  color: #7b7b7b;
+  float: right;
+}
+
+button#previous-ctrl,
+button#next-ctrl {
+  width: 26px;
+  border-radius: 50%;
+  border: 1px solid #7b7b7b;
 }
 
 table {
   border-collapse: collapse;
 }
 
+table,
+tr {
+  width: 100%;
+}
+
 td[id^="date"] {
   position: relative;
   height: 80px;
-  width: 80px;
   border: 1px solid #dedede;
   vertical-align: top;
   padding: 6px;
@@ -20,22 +64,95 @@ td.other-month {
 }
 
 form#appointment-box {
-  background-color: lightgrey;
+  background-color: #fff;
+  border: 1px solid #dedede;
   position: absolute;
-  top: 28px;
+  top: 36px;
+  left: -8px;
   height: 60px;
   z-index: 9;
+  padding: 6px;
+  width: 140px;
+  border-radius: 4px;
+}
+
+form#appointment-box:after,
+form#appointment-box:before {
+  bottom: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+form#appointment-box:after {
+  border-color: rgba(136, 183, 213, 0);
+  border-bottom-color: #fff;
+  border-width: 10px;
+  margin-left: -65px;
+}
+
+form#appointment-box:before {
+  border-color: rgba(194, 225, 245, 0);
+  border-bottom-color: #dedede;
+  border-width: 11px;
+  margin-left: -66px;
+}
+
+input#appointment-box {
+  width: 134px;
+  background-color: transparent;
+  font-size: 14px;
+  outline: unset;
+  border-top: unset;
+  border-left: unset;
+  border-right: unset;
 }
 
 button#appointment-box {
   display: block;
+  float: right;
+  font-weight: bold;
+  color: #32db64;
+  background-color: transparent;
+  margin-top: 10px;
 }
 
 #appointment {
   position: absolute;
-  height: 64%;
+  height: 50%;
   width: 87%;
   top: 0;
   left: 0;
-  padding: 28px 6px 6px;
+  padding: 40px 6px 6px;
+}
+
+#appointment span {
+  position: relative;
+  display: block;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid #222;
+  background-color: #dedede;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.delete {
+  color: #f53d3d;
+  font-weight: bold;
+  font-size: 14px;
+  display: none;
+  position: absolute;
+  background-color: transparent;
+  top: 0;
+  right: 0;
+}
+
+#appointment span:hover .delete {
+  display: block
 }
