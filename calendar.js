@@ -54,7 +54,7 @@ class Calendar {
   generateDateCells() {
     const dateHelper = new Date(this.activeDate.getFullYear(), this.activeDate.getMonth(), 1);
     dateHelper.setDate(dateHelper.getDate() - dateHelper.getDay());
-    
+
     this.generateDaysHeader();
     let weekRow = document.createElement('tr');
     this.calendar.appendChild(weekRow);
@@ -67,7 +67,7 @@ class Calendar {
       const dateNumber = document.createElement('span');
       dateNumber.innerText = dateHelper.getDate();
       dateNumber.className = (dateHelper.getTime() === this.today.getTime()) ? 'today' : '';
-      
+
       this.setAppointmentValue(dateCell);
 
       if (dateHelper.getDay() === 6 && i < 41) {
@@ -82,15 +82,7 @@ class Calendar {
 
   generateDaysHeader() {
     let daysHeader = document.createElement('tr');
-    const days = [
-      'Mon',
-      'Sun',
-      'Tue',
-      'Wed',
-      'Thu',
-      'Fri',
-      'Sat'
-    ];
+    const days = ['Mon', 'Sun', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     days.forEach(day => {
       const dayCell = document.createElement('th');
@@ -119,8 +111,10 @@ class Calendar {
    */
   changeMonthLabel() {
     const month = document.createElement('b');
-    month.innerText = this.activeDate.toLocaleDateString('en', { month: 'short' });
-    
+    month.innerText = this.activeDate.toLocaleDateString('en', {
+      month: 'short'
+    });
+
     this.activeMonth.innerHTML = '';
     this.activeMonth.appendChild(month);
     this.activeMonth.append(` ${this.activeDate.getFullYear()}`);
@@ -131,15 +125,19 @@ class Calendar {
    * @param {MouseEvent} event 
    */
   openEventManagementBox(event) {
-    const { id } = event.target;
-    const { id: idParent } = event.target.parentElement;
+    const {
+      id
+    } = event.target;
+    const {
+      id: idParent
+    } = event.target.parentElement;
     const target = (idParent !== 'appointment') ? event.target : event.target.parentElement;
-    
-    if ((id === 'appointment-box' || id === 'delete-appointment') 
-      || (target.tagName === 'SPAN' && !this.appointmentBox.hidden)) return;
+
+    if ((id === 'appointment-box' || id === 'delete-appointment') ||
+      (target.tagName === 'SPAN' && !this.appointmentBox.hidden)) return;
 
     const value = (id && !id.includes('date')) ? event.target.firstChild.firstChild.data : event.target.firstChild.data;
-    
+
     this.appointmentBox[0].value = value || '';
     this.appointmentBox.hidden = false;
     target.appendChild(this.appointmentBox);
@@ -156,16 +154,15 @@ class Calendar {
     const { value } = event.target[0];
     if (!value) return;
 
-    const parent = event.target.parentElement;
-    const appointment = this.generateAppointmentDiv(value, parent.id);
+    const target = event.target.parentElement.parentElement.id ? event.target.parentElement.parentElement : event.target.parentElement;
+    this.deleteAppointment(target.id);
+    localStorage.setItem(target.id, value);
 
-    const { id } = event.target.parentNode;
-    localStorage.setItem(id, value);
+    const appointment = this.generateAppointmentDiv(value, target.id);
+    target.appendChild(appointment);
 
     event.target[0].value = '';
     this.appointmentBox.hidden = true;
-
-    parent.appendChild(appointment);
   }
 
   /**
@@ -184,7 +181,7 @@ class Calendar {
     deleteBtn.className = 'delete';
     deleteBtn.innerHTML = 'Χ';
     deleteBtn.addEventListener('click', this.deleteAppointment.bind(this, id));
-    
+
     textSpan.appendChild(deleteBtn);
     appointment.appendChild(textSpan);
 
@@ -199,7 +196,10 @@ class Calendar {
     localStorage.removeItem(id);
 
     const target = document.getElementById(id);
-    target.querySelector('#appointment').remove();
+    const appointment = target.querySelector('#appointment');
+
+    if (appointment)
+      appointment.remove();
   }
 }
 
