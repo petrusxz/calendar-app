@@ -54,30 +54,21 @@ class Calendar {
   generateDateCells() {
     const dateHelper = new Date(this.activeDate.getFullYear(), this.activeDate.getMonth(), 1);
     dateHelper.setDate(dateHelper.getDate() - dateHelper.getDay());
-
+    
+    this.generateDaysHeader();
     let weekRow = document.createElement('tr');
     this.calendar.appendChild(weekRow);
 
     for (let i = 0; i < 42; i++) {
       const dateCell = weekRow.insertCell();
       dateCell.id = `date-${dateHelper.getTime()}`;
+      dateCell.className = (dateHelper.getMonth() !== this.activeDate.getMonth()) ? 'other-month' : '';
+
       const dateNumber = document.createElement('span');
       dateNumber.innerText = dateHelper.getDate();
+      dateNumber.className = (dateHelper.getTime() === this.today.getTime()) ? 'today' : '';
       
-      const value = localStorage.getItem(dateCell.id);
-      
-      if (dateHelper.getTime() === this.today.getTime()) {
-        dateNumber.className = 'today';
-      }
-
-      if (value) {
-        const appointment = this.generateAppointmentDiv(value, dateCell.id);
-        dateCell.appendChild(appointment);
-      }
-
-      if (dateHelper.getMonth() !== this.activeDate.getMonth()) {
-        dateCell.className = 'other-month';
-      }
+      this.setAppointmentValue(dateCell);
 
       if (dateHelper.getDay() === 6 && i < 41) {
         weekRow = document.createElement('tr');
@@ -86,6 +77,40 @@ class Calendar {
 
       dateCell.appendChild(dateNumber);
       dateHelper.setDate(dateHelper.getDate() + 1);
+    }
+  }
+
+  generateDaysHeader() {
+    let daysHeader = document.createElement('tr');
+    const days = [
+      'Mon',
+      'Sun',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat'
+    ];
+
+    days.forEach(day => {
+      const dayCell = document.createElement('th');
+      dayCell.innerText = day;
+      daysHeader.appendChild(dayCell);
+    });
+
+    this.calendar.appendChild(daysHeader);
+  }
+
+  /**
+   * Sets the appointment value inside the date cell
+   * @param {HTMLTableDataCellElement} dateCell 
+   */
+  setAppointmentValue(dateCell) {
+    const value = localStorage.getItem(dateCell.id);
+
+    if (value) {
+      const appointment = this.generateAppointmentDiv(value, dateCell.id);
+      dateCell.appendChild(appointment);
     }
   }
 
@@ -108,11 +133,14 @@ class Calendar {
   openEventManagementBox(event) {
     const { id } = event.target;
     const { id: idParent } = event.target.parentElement;
-    const target = idParent !== 'appointment' ? event.target : event.target.parentElement;
-
-    if ((id === 'appointment-box' || id === 'delete-appointment') || (target.tagName === 'SPAN' && !this.appointmentBox.hidden)) return;
+    const target = (idParent !== 'appointment') ? event.target : event.target.parentElement;
     
-    this.appointmentBox[0].value = (id === 'appointment' || idParent === 'appointment') ? event.target.innerText.split('\n')[0] : '';
+    if ((id === 'appointment-box' || id === 'delete-appointment') 
+      || (target.tagName === 'SPAN' && !this.appointmentBox.hidden)) return;
+
+    const value = (id && !id.includes('date')) ? event.target.firstChild.firstChild.data : event.target.firstChild.data;
+    
+    this.appointmentBox[0].value = value || '';
     this.appointmentBox.hidden = false;
     target.appendChild(this.appointmentBox);
     this.appointmentBox[0].focus();
@@ -148,12 +176,13 @@ class Calendar {
   generateAppointmentDiv(value, id) {
     const appointment = document.createElement('div');
     appointment.id = 'appointment';
+
     const textSpan = document.createElement('span');
     textSpan.innerText = value;
+
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete';
     deleteBtn.innerHTML = 'Χ';
-
     deleteBtn.addEventListener('click', this.deleteAppointment.bind(this, id));
     
     textSpan.appendChild(deleteBtn);
@@ -162,9 +191,15 @@ class Calendar {
     return appointment;
   }
 
-  deleteAppointment(id, event) {
+  /**
+   * Deletes the appointment from the calendar
+   * @param {string} id 
+   */
+  deleteAppointment(id) {
     localStorage.removeItem(id);
-    event.target.parentNode.remove();
+
+    const target = document.getElementById(id);
+    target.querySelector('#appointment').remove();
   }
 }
 

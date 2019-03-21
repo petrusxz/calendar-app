@@ -10,22 +10,20 @@
   <link href="./calendar.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-  <!-- <h2>Calendar App</h2> -->
 
   <div class="calendar-container">
     <div class="calendar-header">
       <div id="active-month"></div>
-      <button id="previous-ctrl">&lang;</button>
-      <button id="today-ctrl">Today</button>
       <button id="next-ctrl">&rang;</button>
+      <button id="today-ctrl">Today</button>
+      <button id="previous-ctrl">&lang;</button>
     </div>
     
     <table id="calendar"></table>
     
     <form hidden id="appointment-box">
       <input type="text" id="appointment-box"></input>
-      <button type="submit" id="appointment-box">&#8730;</button>
-      <!-- <button type="button" id="delete-appointment">&#967;</button> -->
+      <button type="submit" id="appointment-box">Save</button>
     </form>
   </div>
 
